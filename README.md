@@ -132,5 +132,3 @@ A tiny detective that checks your code and says,
 
 ---
 
-Let me know if you want to try a mini project with one of these — like making a picture talk or removing a background from a photo.  
-We can build something magical together 💫
