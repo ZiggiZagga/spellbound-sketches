@@ -1,6 +1,6 @@
-text
 Pillow>=9.0.0
 numpy
 opencv-python
 pyttsx3
 pytest
+typer
