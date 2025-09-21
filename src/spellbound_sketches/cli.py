@@ -9,7 +9,7 @@ import json
 import typer
 
 from adapter import multimodal_plan_for_animation
-from preprocess import removebackground, exportparts
+from preprocess import remove_background, export_parts
 from animator import render_animation_from_plan
 from player import playgifwithtts
 
@@ -34,13 +34,21 @@ def cli_collect_onboarding():
 def sketch():
     print("Sketchbook Animator — quick prototype")
     img_path = input("Path to photo/scan of the drawing (png/jpg): ").strip()
+    if not img_path:
+        print("No image path provided. Exiting.")
+        return
     onboarding = cli_collect_onboarding()
 
     print("Preprocessing image (removing background)...")
-    charpng = removebackground(img_path, out_path="character.png")
+    charpng = remove_background(img_path, out_path="character.png")
+    if not charpng:
+        print("Failed to preprocess image. Exiting.")
+        return
 
     print("Optional: export parts for better puppeting (head, body, leftwing, rightwing).")
-    parts = exportparts(charpng, partsdir="parts", auto=True)  # returns dict or None
+    parts = export_parts(charpng, parts_dir="parts", auto=True)  # returns dict or None
+    if parts is None:
+        print("Warning: Could not export parts. Continuing with main image only.")
 
     print("Requesting animation plan from multimodal adapter...")
     plan = multimodal_plan_for_animation(image_path=charpng, onboarding=onboarding)
@@ -49,10 +57,16 @@ def sketch():
 
     print("Rendering animation frames...")
     gifpath = render_animation_from_plan(plan, charpng, parts_dir="parts")
+    if not gifpath:
+        print("Failed to render animation. Exiting.")
+        return
     print(f"Saved GIF to {gifpath}")
 
     print("Playing animation with short voice line...")
-    playgifwithtts(gifpath, plan.get("sound_text", ""))
+    try:
+        playgifwithtts(gifpath, plan.get("sound_text", ""))
+    except Exception as e:
+        print(f"Error playing animation or TTS: {e}")
 
 
 # This lets you run the app by typing 'python cli.py' in the terminal

@@ -51,7 +51,7 @@ def canned_plan_for_animation():
         ],
         "sound_text": "Hello! I am your sketch friend. Let's play!",  # What the character will say
         "variants": {
-            "eyesclosed": "variants/eyesclosed.png"  # Extra images for the animation
+            "eyes_closed": "variants/eyesclosed.png"  # Extra images for the animation
         }
     }
 
