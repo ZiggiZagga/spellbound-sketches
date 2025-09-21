@@ -31,18 +31,18 @@ def playgifwithtts(gif_path: str, tts_text: str = ""):
         if tts_text:
             threading.Thread(target=playtts, args=(tts_text,), daemon=True).start()
 
-        # Open the GIF file
-        im = Image.open(gif_path)
-        # Get all the frames (pictures) from the GIF so we can animate them
-        frames = [ImageTk.PhotoImage(frame.convert("RGBA")) for frame in ImageSequence.Iterator(im)]
-        # How long to show each frame (in milliseconds)
-        durations = im.info.get("duration", 100)
-
-        # Make a new window
+        # Make a new window FIRST (must exist before creating PhotoImage)
         root = tk.Tk()
         root.title("Sketchbook Friend")  # Give the window a cute name
         lbl = tk.Label(root)  # This label will show our animation
         lbl.pack()
+
+        # Open the GIF file
+        im = Image.open(gif_path)
+        # Get all the frames (pictures) from the GIF so we can animate them
+        frames = [ImageTk.PhotoImage(frame.convert("RGBA"), master=root) for frame in ImageSequence.Iterator(im)]
+        # How long to show each frame (in milliseconds)
+        durations = im.info.get("duration", 100)
 
         # This function changes the picture every few milliseconds to make the animation
         def animate(i=0):

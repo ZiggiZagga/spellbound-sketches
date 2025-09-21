@@ -3,4 +3,4 @@ numpy
 opencv-python
 pyttsx3
 pytest
-typer
+typer>=0.9.0
