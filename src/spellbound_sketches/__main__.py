@@ -1,6 +1,8 @@
+"""Entry point for running the spellbound_sketch package as a module.
 
-# This file lets you run the project from the command line (like 'python -m spellbound_sketches')
-# It starts the main app, which is defined in cli.py
+This allows you to start the application with:
+    python -m spellbound_sketch
+"""
 
 if __name__ == "__main__":
     from cli import app  # Import the main app from cli.py

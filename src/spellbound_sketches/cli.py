@@ -1,17 +1,14 @@
-def clicollectonboarding():
-
-# This file lets you use the project from the command line (like a little program you run in the terminal)
-# It guides you through making your own animated character from a drawing!
+"""Command line interface for creating a simple animated GIF from a drawing."""
 
 import logging
 import os
 import json
 import typer
 
-from adapter import multimodal_plan_for_animation
-from preprocess import remove_background, export_parts
-from animator import render_animation_from_plan
-from player import playgifwithtts
+from spellbound_sketches.adapter import multimodal_plan_for_animation
+from spellbound_sketches.preprocess import remove_background, export_parts
+from spellbound_sketches.animator import render_animation_from_plan
+from spellbound_sketches.player import playgifwithtts
 
 # Set up logging (for messages and errors)
 logging.basicConfig(level=logging.INFO)
@@ -21,22 +18,27 @@ logger = logging.getLogger(name)
 # This makes it easy to create command-line commands
 app = typer.Typer(pretty_exceptions_enable=False)
 
-# This function asks the user a few questions to personalize the experience
 def cli_collect_onboarding():
+    """Collect a few preferences to personalize the animation."""
     print("Welcome! Three quick questions to make this yours.")
-    q1 = input("1) What colors do you like most? (e.g. bright, pastel, dark): ").strip()
-    q2 = input("2) Do you like adventures, cozy tales, or silly jokes? ").strip()
-    q3 = input("3) Should the character ask you before acting, or surprise you sometimes? (ask/surprise): ").strip()
+    q1 = input("1) What colors do you like most? (e.g. bright, pastel, dark) [bright]: ").strip()
+    if not q1:
+        q1 = "bright"
+    q2 = input("2) Do you like adventures, cozy tales, or silly jokes? [adventures]: ").strip()
+    if not q2:
+        q2 = "adventures"
+    q3 = input("3) Should the character ask you before acting, or surprise you sometimes? (ask/surprise) [ask]: ").strip()
+    if not q3:
+        q3 = "ask"
     return {"colors": q1, "tone": q2, "autonomy": q3}
 
-# This is the main command to create an animation from your drawing!
 @app.command()
 def sketch():
+    """Create an animation from a user supplied drawing."""
     print("Sketchbook Animator — quick prototype")
-    img_path = input("Path to photo/scan of the drawing (png/jpg): ").strip()
+    img_path = input("Path to photo/scan of the drawing (png/jpg) [sample_data/sample_drawing.png]: ").strip()
     if not img_path:
-        print("No image path provided. Exiting.")
-        return
+        img_path = "sample_data/sample_drawing.png"
     onboarding = cli_collect_onboarding()
 
     print("Preprocessing image (removing background)...")

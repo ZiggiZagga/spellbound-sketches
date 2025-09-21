@@ -1,14 +1,19 @@
-
-
-# This file helps us get drawings ready for animation!
-# It can remove the background from a picture and split it into parts (like head, body, wings).
+"""Basic image preprocessing for animation: background removal and naive part export."""
 
 from PIL import Image, ImageOps
 import numpy as np
 import os
 
- # This function removes the white background from a drawing, so only the character is left.
 def remove_background(input_path: str, out_path: str = "character.png"):
+    """Remove (near-)white background and save a transparent PNG.
+
+    Args:
+        input_path: Path to the source drawing (RGBA will be used).
+        out_path: Output path for the processed PNG.
+
+    Returns:
+        The output path on success, or None on failure.
+    """
     try:
         img = Image.open(input_path).convert("RGBA")
         arr = np.array(img)
@@ -23,12 +28,16 @@ def remove_background(input_path: str, out_path: str = "character.png"):
         print(f"Error removing background: {e}")
         return None
 
- # This function tries to split the character into parts (head, body, wings) by cropping the image.
- # It's a simple guess, but it works for basic drawings!
 def export_parts(charpng_path: str, parts_dir="parts", auto=True):
-    """
-    Quick trick: create body/head/leftwing/rightwing by cropping the image into sections.
-    For a real project, you might want to use a smarter method or do it by hand.
+    """Naively crop an image into head/body/left_wing/right_wing parts.
+
+    Args:
+        charpng_path: Path to the character PNG.
+        parts_dir: Directory to write part images into.
+        auto: Present for API shape; cropping is always naive here.
+
+    Returns:
+        Dict of part names to file paths, or None on failure.
     """
     try:
         os.makedirs(parts_dir, exist_ok=True)

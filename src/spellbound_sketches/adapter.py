@@ -1,22 +1,32 @@
+"""Adapter module for generating animation plans.
 
-# This file is like a "translator" between our code and a smart AI (like ChatGPT) that can look at pictures and text.
-# For now, it just gives us a pretend ("canned") animation plan, but you could connect it to a real AI later!
+This file acts as a translator between the code and a multimodal AI
+(e.g., ChatGPT-like system that can handle images and text). For now,
+it provides a placeholder API call and a canned (pretend) animation
+plan for testing purposes.
+"""
 
 import json
 import base64
 
-# This function is a placeholder for calling a real AI that understands images and text.
-# For now, it just raises an error so we use the fake plan below.
 def call_multimodal_api(image_path: str, prompt: str) -> dict:
-    """
-    TODO: Replace this with a real AI call!
-    It should return a plan for how to animate the drawing.
+    """Placeholder for a real multimodal API call.
+
+    Args:
+        image_path: Path to the input drawing.
+        prompt: Text prompt describing the desired animation.
+
+    Returns:
+        A dictionary representing the animation plan.
+
+    Raises:
+        RuntimeError: Always, since no real API is implemented yet.
     """
     raise RuntimeError("TODO: No real multimodal API configured. Use fallback or implement API call here.")
 
-# This function gives us a pretend animation plan, so we can test the rest of the code.
 def canned_plan_for_animation():
-    # This is an example of what a real AI might return.
+    """Return a fake animation plan for testing."""
+
     return {
         "duration_ms": 1200,  # How long the animation lasts (in milliseconds)
         "fps": 12,  # Frames per second (how smooth the animation is)
@@ -55,14 +65,25 @@ def canned_plan_for_animation():
         }
     }
 
-# This function asks the AI for an animation plan, or uses the fake one if the AI isn't set up.
 def multimodal_plan_for_animation(image_path: str, onboarding: dict) -> dict:
+    """Get an animation plan using a multimodal AI or fallback.
+
+    Attempts to call the real multimodal API with the given drawing
+    and onboarding details. If the API is unavailable or raises an error,
+    falls back to the canned plan.
+
+    Args:
+        image_path: Path to the input drawing.
+        onboarding: Extra onboarding details to include in the prompt.
+
+    Returns:
+        A dictionary representing the animation plan.
+    """
+    
     prompt = f"Given this drawing and onboarding {onboarding}, propose a short animation plan (JSON): actions with part, timing in frames, transforms, and a short sound_text."
     try:
         res = call_multimodal_api(image_path, prompt)
-        # In a real version, you would check if the result is correct here
         return res
     except Exception:
-        # If the AI isn't set up, use the pretend plan
         plan = canned_plan_for_animation()
         return plan
