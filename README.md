@@ -3,6 +3,7 @@
 
 ## 🟢 1-2-3 Quickstart (For Kids & Beginners)
 
+
 1. **Open a terminal** (or ask an adult to help)
 2. **Copy & paste these commands:**
 
@@ -10,7 +11,9 @@
 	git clone https://github.com/ZiggiZagga/spellbound-sketches.git
 	cd spellbound-sketches
 	pip install -r requirements.txt
-	python -m spellbound_sketches.cli sketch
+	# If you see an error like 'Got unexpected extra argument (sketch)', just run:
+		pip install --upgrade typer
+	PYTHONPATH=src python -m spellbound_sketches.cli
 	```
 
 3. **When it asks for an image, just press Enter** (it will use the sample drawing for you!)
@@ -80,16 +83,24 @@ pip install -r requirements.txt
 ```
 
 
+
 ### 5. Try the sample project!
 
 - Open VS Code in this folder: `code .`
-- Run the following command in the terminal:
+
+In the terminal, run the following command from the project root (no need to `cd src`):
+
+```bash
+PYTHONPATH=src python -m spellbound_sketches.cli sketch
+```
+
+When prompted for an image, you can just press Enter to use the provided sample (`sample_data/sample_drawing.png`).
 
 	```bash
 	python -m spellbound_sketches.cli sketch
 	```
 
-- When prompted for an image, you can just press Enter to use the provided sample (`sample_data/sample_drawing.png`).
+- When prompted for an image, you can just press Enter to use the provided sample (`../sample_data/sample_drawing.png`).
 ---
 
 ## 👨‍👩‍👧 For Parents & Helpers
@@ -101,7 +112,10 @@ pip install -r requirements.txt
 
 ---
 
+
 ### 6. (Optional) Run the tests
+
+From the project root (not inside `src`), run:
 
 ```bash
 pytest
