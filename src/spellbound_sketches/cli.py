@@ -19,18 +19,52 @@ logger = logging.getLogger(name)
 app = typer.Typer(pretty_exceptions_enable=False)
 
 def cli_collect_onboarding() -> dict:
-    """Collect a few preferences to personalize the animation."""
-    logger.info("Welcome! Three quick questions to make this yours.")
-    q1 = input("1) What colors do you like most? (e.g. bright, pastel, dark) [bright]: ").strip()
+    """Collect preferences to personalize the animation, including age group and more."""
+    logger.info("Welcome! Let's personalize your animation experience.")
+    print("\n--- Onboarding ---")
+    print("Choose your age group for a tailored experience:")
+    print("  1) Young child (5-8)")
+    print("  2) Older child (9-12)")
+    print("  3) Teen/Adult")
+    age_group = input("Select age group [1/2/3, default 1]: ").strip()
+    if age_group not in {"1", "2", "3"}:
+        age_group = "1"
+
+    # Presets for each age group
+    presets = {
+        "1": {"colors": "bright", "tone": "silly", "autonomy": "ask", "difficulty": "easy"},
+        "2": {"colors": "pastel", "tone": "adventures", "autonomy": "surprise", "difficulty": "medium"},
+        "3": {"colors": "dark", "tone": "cozy tales", "autonomy": "surprise", "difficulty": "advanced"},
+    }
+    preset = presets[age_group]
+
+    print("\nYou can customize your experience or press Enter to use the suggested preset.")
+    q1 = input(f"1) Favorite colors? (e.g. bright, pastel, dark) [{preset['colors']}]: ").strip()
     if not q1:
-        q1 = "bright"
-    q2 = input("2) Do you like adventures, cozy tales, or silly jokes? [adventures]: ").strip()
+        q1 = preset["colors"]
+    q2 = input(f"2) Story style? (adventures, cozy tales, silly jokes) [{preset['tone']}]: ").strip()
     if not q2:
-        q2 = "adventures"
-    q3 = input("3) Should the character ask you before acting, or surprise you sometimes? (ask/surprise) [ask]: ").strip()
+        q2 = preset["tone"]
+    q3 = input(f"3) Should the character ask before acting, or surprise you? (ask/surprise) [{preset['autonomy']}]: ").strip()
     if not q3:
-        q3 = "ask"
-    return {"colors": q1, "tone": q2, "autonomy": q3}
+        q3 = preset["autonomy"]
+    q4 = input(f"4) Animation difficulty? (easy, medium, advanced) [{preset['difficulty']}]: ").strip()
+    if not q4:
+        q4 = preset["difficulty"]
+    q5 = input("5) Would you like sound effects? (yes/no) [yes]: ").strip().lower()
+    if not q5:
+        q5 = "yes"
+
+    onboarding = {
+        "age_group": age_group,
+        "colors": q1,
+        "tone": q2,
+        "autonomy": q3,
+        "difficulty": q4,
+        "sound_effects": q5 == "yes"
+    }
+    print("\nThank you! Your preferences are saved.\n")
+    return onboarding
 
 @app.command()
 def sketch() -> None:
