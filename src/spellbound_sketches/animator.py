@@ -16,10 +16,12 @@ logger = logging.getLogger("spellbound_sketches.animator")
 
 def lerp(a: float, b: float, t: float) -> float:
     """Linearly interpolate between two values."""
+    # Why: simple building block for smooth motion; pairs with easing below.
     return a + (b - a) * t
 
 def ease_out(t: float) -> float:
     """Ease-out function: start fast, end slow."""
+    # Why: feels more natural than linear; reduces “robotic” motion.
     return 1 - (1 - t) * (1 - t)
 
 def render_animation_from_plan(
@@ -51,19 +53,23 @@ def render_animation_from_plan(
     """
 
     try:
+        # Normalize paths early (avoids string/path mixing later)
         char_png = Path(char_png)
         if parts_dir is not None:
             parts_dir = Path(parts_dir)
         out_gif = Path(out_gif)
-        # Get how long the animation should be and how smooth (frames per second)
+
+        # Timeline: duration + fps = total frame budget
         duration_ms = plan.get("duration_ms", 1000)
         fps = plan.get("fps", 12)
         total_frames = max(1, int(duration_ms / 1000 * fps))
+
+        # Base sprite
         base = Image.open(char_png).convert("RGBA")
         w, h = base.size
         frames = []
 
-        # Load extra parts if we have them (like head, wings)
+        # Optional part overlays (e.g., head). Non-blocking if missing.
         parts = {}
         if parts_dir and parts_dir.is_dir():
             for name in ("body", "head", "leftwing", "rightwing"):
@@ -76,7 +82,8 @@ def render_animation_from_plan(
             """Build a single frame with optional transforms and overlays."""
 
             canvas = Image.new("RGBA", base.size, (255,255,255,0))
-            # Resize the character for scaling
+
+            # Resize first, then center with offset: keeps character “anchored”
             sw = int(base.width * scale[0])
             sh = int(base.height * scale[1])
             base_resized = base.resize((sw, sh), resample=Image.BICUBIC)
@@ -84,22 +91,27 @@ def render_animation_from_plan(
             y = (h - sh)//2 + offset[1]
             canvas.paste(base_resized, (int(x), int(y)), base_resized)
 
-            # If we have a special head image, put it on top
+            # Part swap example: head variant layered above the base
             if head_img is not None and "head" in parts:
                 canvas.paste(head_img, ((w - head_img.width)//2, (h - head_img.height)//2 - 20), head_img)
-            # Add any extra overlays
+
+            # Extra overlays (if provided by future actions)
             if extra_overlay:
                 canvas.paste(extra_overlay, (0,0), extra_overlay)
             return canvas
 
-        # Load any special images (like eyes closed) from the plan
+        # Variant assets advertised by the plan (e.g., eyes_closed)
         variants = {}
         for k, v in plan.get("variants", {}).items():
             v_path = Path(v)
             if v_path.exists():
                 variants[k] = Image.open(v_path).convert("RGBA")
 
-        # For each frame, figure out what should move or change
+        # Frame loop: evaluate all actions for each frame
+        # Multiple actions may overlap, we accumulate their effects:
+        #   - translate: offsets are added
+        #   - scale: factors are multiplied
+        #   - swap_image: latest applicable wins for that part
         for f in range(total_frames):
             offset = [0,0]
             scale = [1.0,1.0]
@@ -108,6 +120,8 @@ def render_animation_from_plan(
                 sf, ef = act.get("start_frame", 0), act.get("end_frame", total_frames)
                 if f < sf or f > ef:
                     continue
+
+                # Normalized time within the action window
                 t_norm = (f - sf) / max(1, (ef - sf))
                 easing = act.get("easing")
                 if easing == "ease_out":
@@ -127,13 +141,14 @@ def render_animation_from_plan(
                 if act["type"] == "swap_image" and act.get("variant"):
                     vname = act["variant"]
                     if vname in variants:
-                        head_variant = variants[vname]
+                        head_variant = variants[vname] # last one wins
             frame = compose_frame(offset=tuple(offset), scale=tuple(scale), head_img=head_variant)
             frames.append(frame.convert("RGBA"))
 
-        # Save all the frames as a GIF (animation)
+        # --- Encode as GIF duration (ms per frame) derived from FPS; disposal=2 avoids ghosting
         frames[0].save(out_gif, saveall=True, append_images=frames[1:], duration=int(1000/fps), loop=0, disposal=2)
         return str(out_gif)
     except Exception as e:
+        # Centralized error logging keeps CLI clean and helps debugging
         logger.error(f"Error rendering animation: {e}")
         return None
