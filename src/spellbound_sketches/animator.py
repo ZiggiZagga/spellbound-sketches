@@ -9,11 +9,11 @@ import os
 import math
 
 # This function helps us smoothly move from one value to another (for animation!)
-def lerp(a, b, t):
+def lerp(a: int, b: int, t: int) -> int:
     return a + (b - a) * t
 
 # This function makes movement look more natural (starts fast, ends slow)
-def ease_out(t):
+def ease_out(t: int) -> int:
     return 1 - (1 - t) * (1 - t)
 
 # This is the main function that creates the animation!
@@ -21,7 +21,7 @@ def ease_out(t):
 # char_png: the main character image
 # parts_dir: folder with extra parts (like head, wings)
 # out_gif: where to save the finished animation
-def render_animation_from_plan(plan: dict, char_png: str, parts_dir: str = None, out_gif="out.gif"):
+def render_animation_from_plan(plan: dict, char_png: str, parts_dir: str|None = None, out_gif:str="out.gif"):
     try:
         # Get how long the animation should be and how smooth (frames per second)
         duration_ms = plan.get("duration_ms", 1000)
@@ -40,12 +40,12 @@ def render_animation_from_plan(plan: dict, char_png: str, parts_dir: str = None,
                     parts[name] = Image.open(p).convert("RGBA")
 
         # This helper puts everything together for each frame
-        def compose_frame(offset=(0,0), scale=(1.0,1.0), head_img=None, extra_overlay=None):
+        def compose_frame(offset:tuple=(0,0), scale:tuple=(1.0,1.0), head_img:Image.Image|None=None, extra_overlay:Image.Image|None=None) -> Image.Image:
             canvas = Image.new("RGBA", base.size, (255,255,255,0))
             # Resize the character for scaling
             sw = int(base.width * scale[0])
             sh = int(base.height * scale[1])
-            base_resized = base.resize((sw, sh), resample=Image.BICUBIC)
+            base_resized = base.resize((sw, sh), resample=Image.Resampling.BICUBIC)
             x = (w - sw)//2 + offset[0]
             y = (h - sh)//2 + offset[1]
             canvas.paste(base_resized, (int(x), int(y)), base_resized)

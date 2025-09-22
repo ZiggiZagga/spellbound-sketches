@@ -10,7 +10,7 @@ import time
 
 
 # This function makes the computer say whatever text you give it.
-def playtts(text):
+def playtts(text: str):
     if not text:
         return  # If there's nothing to say, just stop
     try:
@@ -45,7 +45,7 @@ def playgifwithtts(gif_path: str, tts_text: str = ""):
         durations = im.info.get("duration", 100)
 
         # This function changes the picture every few milliseconds to make the animation
-        def animate(i=0):
+        def animate(i:int=0):
             lbl.config(image=frames[i])  # Show the current frame
             # Wait a bit, then show the next frame (loops back to start)
             root.after(durations, lambda: animate((i+1) % len(frames)))

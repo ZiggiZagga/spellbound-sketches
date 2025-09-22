@@ -22,7 +22,7 @@ logger = logging.getLogger(name)
 app = typer.Typer(pretty_exceptions_enable=False)
 
 # This function asks the user a few questions to personalize the experience
-def cli_collect_onboarding():
+def cli_collect_onboarding() -> dict:
     print("Welcome! Three quick questions to make this yours.")
     q1 = input("1) What colors do you like most? (e.g. bright, pastel, dark) [bright]: ").strip()
     if not q1:
@@ -38,7 +38,7 @@ def cli_collect_onboarding():
 # This is the main command to create an animation from your drawing!
 
 @app.command()
-def sketch():
+def sketch() -> None:
     print("Sketchbook Animator — quick prototype")
     img_path = input("Path to photo/scan of the drawing (png/jpg) [sample_data/sample_drawing.png]: ").strip()
     if not img_path:

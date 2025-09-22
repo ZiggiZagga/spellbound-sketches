@@ -15,7 +15,7 @@ def call_multimodal_api(image_path: str, prompt: str) -> dict:
     raise RuntimeError("TODO: No real multimodal API configured. Use fallback or implement API call here.")
 
 # This function gives us a pretend animation plan, so we can test the rest of the code.
-def canned_plan_for_animation():
+def canned_plan_for_animation() -> dict:
     # This is an example of what a real AI might return.
     return {
         "duration_ms": 1200,  # How long the animation lasts (in milliseconds)

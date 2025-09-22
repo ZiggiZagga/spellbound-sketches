@@ -8,7 +8,7 @@ import numpy as np
 import os
 
  # This function removes the white background from a drawing, so only the character is left.
-def remove_background(input_path: str, out_path: str = "character.png"):
+def remove_background(input_path: str, out_path: str = "character.png") -> str|None:
     try:
         img = Image.open(input_path).convert("RGBA")
         arr = np.array(img)
@@ -25,7 +25,7 @@ def remove_background(input_path: str, out_path: str = "character.png"):
 
  # This function tries to split the character into parts (head, body, wings) by cropping the image.
  # It's a simple guess, but it works for basic drawings!
-def export_parts(charpng_path: str, parts_dir="parts", auto=True):
+def export_parts(charpng_path: str, parts_dir="parts", auto=True) -> dict|None :
     """
     Quick trick: create body/head/leftwing/rightwing by cropping the image into sections.
     For a real project, you might want to use a smarter method or do it by hand.
