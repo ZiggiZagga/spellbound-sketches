@@ -97,10 +97,30 @@ def sketch() -> None:
     logger.info("Requesting animation plan from multimodal adapter...")
     print("[Info] Requesting animation plan from the AI...")
     plan = multimodal_plan_for_animation(image_path=charpng, onboarding=onboarding)
-    print("[Info] Plan received:")
-    print(json.dumps(plan, indent=2))
-    logger.info("Plan received:")
-    logger.info(json.dumps(plan, indent=2))
+
+    # --- Animation Plan Preview Step ---
+    while True:
+        print("\n[Preview] Here is your animation plan:")
+        print(json.dumps(plan, indent=2))
+        print("Options:")
+        print("  [a] Accept and render animation")
+        print("  [e] Edit plan (duration/fps/actions)")
+        print("  [r] Randomize/regenerate plan")
+        print("  [q] Quit")
+        choice = input("What would you like to do? [a/e/r/q]: ").strip().lower()
+        if choice in {"a", ""}:
+            break
+        elif choice == "e":
+            # Editing will be implemented in the next step
+            print("[Edit] Editing not yet implemented. Please choose another option.")
+        elif choice == "r":
+            print("[Info] Regenerating animation plan...")
+            plan = multimodal_plan_for_animation(image_path=charpng, onboarding=onboarding)
+        elif choice == "q":
+            print("[Info] Exiting without rendering.")
+            return
+        else:
+            print("[Warning] Invalid option. Please choose again.")
 
     logger.info("Rendering animation frames...")
     print("[Info] Rendering animation frames...")
