@@ -1,3 +1,4 @@
+import random
 """Command line interface for creating a simple animated GIF from a drawing."""
 
 import logging
@@ -127,8 +128,19 @@ def sketch() -> None:
             except Exception as e:
                 print(f"[Error] Invalid input: {e}")
         elif choice == "r":
-            print("[Info] Regenerating animation plan...")
-            plan = multimodal_plan_for_animation(image_path=charpng, onboarding=onboarding)
+            print("[Info] Randomizing actions in the animation plan...")
+            # Shuffle actions if present, or regenerate if not
+            if plan.get("actions") and isinstance(plan["actions"], list) and len(plan["actions"]) > 1:
+                random.shuffle(plan["actions"])
+                # Optionally, randomize start_frame/end_frame for fun
+                for act in plan["actions"]:
+                    if "start_frame" in act and "end_frame" in act:
+                        act["start_frame"] = random.randint(0, max(0, plan.get("fps", 12) - 2))
+                        act["end_frame"] = act["start_frame"] + random.randint(1, 4)
+                print("[Randomize] Actions shuffled and timings randomized.")
+            else:
+                print("[Info] Regenerating animation plan...")
+                plan = multimodal_plan_for_animation(image_path=charpng, onboarding=onboarding)
         elif choice == "q":
             print("[Info] Exiting without rendering.")
             return
