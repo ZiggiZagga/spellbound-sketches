@@ -1,7 +1,4 @@
-
-
-# This file lets you use the project from the command line (like a little program you run in the terminal)
-# It guides you through making your own animated character from a drawing!
+"""Command line interface for creating a simple animated GIF from a drawing."""
 
 import logging
 import os
@@ -21,8 +18,8 @@ logger = logging.getLogger(name)
 # This makes it easy to create command-line commands
 app = typer.Typer(pretty_exceptions_enable=False)
 
-# This function asks the user a few questions to personalize the experience
 def cli_collect_onboarding():
+    """Collect a few preferences to personalize the animation."""
     print("Welcome! Three quick questions to make this yours.")
     q1 = input("1) What colors do you like most? (e.g. bright, pastel, dark) [bright]: ").strip()
     if not q1:
@@ -35,10 +32,9 @@ def cli_collect_onboarding():
         q3 = "ask"
     return {"colors": q1, "tone": q2, "autonomy": q3}
 
-# This is the main command to create an animation from your drawing!
-
 @app.command()
 def sketch():
+    """Create an animation from a user supplied drawing."""
     print("Sketchbook Animator — quick prototype")
     img_path = input("Path to photo/scan of the drawing (png/jpg) [sample_data/sample_drawing.png]: ").strip()
     if not img_path:
