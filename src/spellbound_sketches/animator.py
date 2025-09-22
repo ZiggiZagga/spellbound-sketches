@@ -7,18 +7,27 @@ for interpolation and easing.
 
 from PIL import Image
 import numpy as np
-import os
+from pathlib import Path
 import math
+import logging
+from typing import Optional, Dict, Any
 
-def lerp(a, b, t):
+logger = logging.getLogger("spellbound_sketches.animator")
+
+def lerp(a: float, b: float, t: float) -> float:
     """Linearly interpolate between two values."""
     return a + (b - a) * t
 
-def ease_out(t):
+def ease_out(t: float) -> float:
     """Ease-out function: start fast, end slow."""
     return 1 - (1 - t) * (1 - t)
 
-def render_animation_from_plan(plan: dict, char_png: str, parts_dir: str = None, out_gif="out.gif"):
+def render_animation_from_plan(
+    plan: Dict[str, Any],
+    char_png: str | Path,
+    parts_dir: Optional[str | Path] = None,
+    out_gif: str | Path = "out.gif"
+) -> Optional[str]:
     """Render an animated GIF from a plan and a base character image.
 
     The plan may include:
@@ -42,6 +51,10 @@ def render_animation_from_plan(plan: dict, char_png: str, parts_dir: str = None,
     """
 
     try:
+        char_png = Path(char_png)
+        if parts_dir is not None:
+            parts_dir = Path(parts_dir)
+        out_gif = Path(out_gif)
         # Get how long the animation should be and how smooth (frames per second)
         duration_ms = plan.get("duration_ms", 1000)
         fps = plan.get("fps", 12)
@@ -52,10 +65,10 @@ def render_animation_from_plan(plan: dict, char_png: str, parts_dir: str = None,
 
         # Load extra parts if we have them (like head, wings)
         parts = {}
-        if parts_dir and os.path.isdir(parts_dir):
+        if parts_dir and parts_dir.is_dir():
             for name in ("body", "head", "leftwing", "rightwing"):
-                p = os.path.join(parts_dir, f"{name}.png")
-                if os.path.exists(p):
+                p = parts_dir / f"{name}.png"
+                if p.exists():
                     parts[name] = Image.open(p).convert("RGBA")
 
         # This helper puts everything together for each frame
@@ -82,8 +95,9 @@ def render_animation_from_plan(plan: dict, char_png: str, parts_dir: str = None,
         # Load any special images (like eyes closed) from the plan
         variants = {}
         for k, v in plan.get("variants", {}).items():
-            if os.path.exists(v):
-                variants[k] = Image.open(v).convert("RGBA")
+            v_path = Path(v)
+            if v_path.exists():
+                variants[k] = Image.open(v_path).convert("RGBA")
 
         # For each frame, figure out what should move or change
         for f in range(total_frames):
@@ -119,7 +133,7 @@ def render_animation_from_plan(plan: dict, char_png: str, parts_dir: str = None,
 
         # Save all the frames as a GIF (animation)
         frames[0].save(out_gif, saveall=True, append_images=frames[1:], duration=int(1000/fps), loop=0, disposal=2)
-        return out_gif
+        return str(out_gif)
     except Exception as e:
-        print(f"Error rendering animation: {e}")
+        logger.error(f"Error rendering animation: {e}")
         return None

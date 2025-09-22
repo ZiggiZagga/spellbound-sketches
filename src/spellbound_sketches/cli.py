@@ -1,9 +1,9 @@
 """Command line interface for creating a simple animated GIF from a drawing."""
 
 import logging
-import os
 import json
 import typer
+from pathlib import Path
 
 from spellbound_sketches.adapter import multimodal_plan_for_animation
 from spellbound_sketches.preprocess import remove_background, export_parts
@@ -18,9 +18,9 @@ logger = logging.getLogger(name)
 # This makes it easy to create command-line commands
 app = typer.Typer(pretty_exceptions_enable=False)
 
-def cli_collect_onboarding():
+def cli_collect_onboarding() -> dict:
     """Collect a few preferences to personalize the animation."""
-    print("Welcome! Three quick questions to make this yours.")
+    logger.info("Welcome! Three quick questions to make this yours.")
     q1 = input("1) What colors do you like most? (e.g. bright, pastel, dark) [bright]: ").strip()
     if not q1:
         q1 = "bright"
@@ -33,42 +33,44 @@ def cli_collect_onboarding():
     return {"colors": q1, "tone": q2, "autonomy": q3}
 
 @app.command()
-def sketch():
+def sketch() -> None:
     """Create an animation from a user supplied drawing."""
-    print("Sketchbook Animator — quick prototype")
+    logger.info("Sketchbook Animator — quick prototype")
     img_path = input("Path to photo/scan of the drawing (png/jpg) [sample_data/sample_drawing.png]: ").strip()
     if not img_path:
         img_path = "sample_data/sample_drawing.png"
+    img_path = Path(img_path)
     onboarding = cli_collect_onboarding()
 
-    print("Preprocessing image (removing background)...")
-    charpng = remove_background(img_path, out_path="character.png")
+    logger.info("Preprocessing image (removing background)...")
+    charpng = remove_background(img_path, out_path=Path("character.png"))
     if not charpng:
-        print("Failed to preprocess image. Exiting.")
+        logger.error("Failed to preprocess image. Exiting.")
         return
 
-    print("Optional: export parts for better puppeting (head, body, leftwing, rightwing).")
-    parts = export_parts(charpng, parts_dir="parts", auto=True)  # returns dict or None
+    logger.info("Optional: export parts for better puppeting (head, body, leftwing, rightwing).")
+    parts_dir = Path("parts")
+    parts = export_parts(charpng, parts_dir=parts_dir, auto=True)  # returns dict or None
     if parts is None:
-        print("Warning: Could not export parts. Continuing with main image only.")
+        logger.warning("Could not export parts. Continuing with main image only.")
 
-    print("Requesting animation plan from multimodal adapter...")
+    logger.info("Requesting animation plan from multimodal adapter...")
     plan = multimodal_plan_for_animation(image_path=charpng, onboarding=onboarding)
-    print("Plan received:")
-    print(json.dumps(plan, indent=2))
+    logger.info("Plan received:")
+    logger.info(json.dumps(plan, indent=2))
 
-    print("Rendering animation frames...")
-    gifpath = render_animation_from_plan(plan, charpng, parts_dir="parts")
+    logger.info("Rendering animation frames...")
+    gifpath = render_animation_from_plan(plan, charpng, parts_dir=parts_dir)
     if not gifpath:
-        print("Failed to render animation. Exiting.")
+        logger.error("Failed to render animation. Exiting.")
         return
-    print(f"Saved GIF to {gifpath}")
+    logger.info(f"Saved GIF to {gifpath}")
 
-    print("Playing animation with short voice line...")
+    logger.info("Playing animation with short voice line...")
     try:
         playgifwithtts(gifpath, plan.get("sound_text", ""))
     except Exception as e:
-        print(f"Error playing animation or TTS: {e}")
+        logger.error(f"Error playing animation or TTS: {e}")
 
 
 # This lets you run the app by typing 'python cli.py' in the terminal
