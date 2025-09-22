@@ -1,27 +1,47 @@
+"""Render animated GIFs from a simple action plan.
 
-
-# This file is all about making animations from a plan!
-# It takes a drawing and a list of actions (like "blink" or "hop") and turns them into a moving GIF.
+This module reads a base character image and an action plan (translate,
+scale, swap_image) and produces a GIF. It also includes small helpers
+for interpolation and easing.
+"""
 
 from PIL import Image
 import numpy as np
 import os
 import math
 
-# This function helps us smoothly move from one value to another (for animation!)
+
 def lerp(a: int, b: int, t: int) -> int:
+    """Linearly interpolate between two values."""
     return a + (b - a) * t
 
-# This function makes movement look more natural (starts fast, ends slow)
 def ease_out(t: int) -> int:
+    """Ease-out function: start fast, end slow."""
     return 1 - (1 - t) * (1 - t)
 
-# This is the main function that creates the animation!
-# plan: what actions to animate
-# char_png: the main character image
-# parts_dir: folder with extra parts (like head, wings)
-# out_gif: where to save the finished animation
 def render_animation_from_plan(plan: dict, char_png: str, parts_dir: str|None = None, out_gif:str="out.gif"):
+    """The main function that creates the animation from a plan and a base character image.
+
+    The plan may include:
+      - "duration_ms": total animation duration in milliseconds
+      - "fps": frames per second
+      - "actions": a list of actions with keys such as:
+          * type: "translate" | "scale" | "swap_image"
+          * part: "root" or a specific part for swapping
+          * start_frame, end_frame: frame range for the action
+          * start_offset/end_offset, start_scale/end_scale, easing, variant
+      - "variants": mapping of variant names to image file paths
+
+    Args:
+        plan: Dictionary describing timing, actions, and optional variants(What actions to animate).
+        char_png: Path to the main character PNG (the main character image - RGBA recommended).
+        parts_dir: Optional directory containing extra part images.
+        out_gif: Output path for the rendered GIF(where to save the finished animation).
+
+    Returns:
+        The output GIF path on success, or None if rendering fails.
+    """
+
     try:
         # Get how long the animation should be and how smooth (frames per second)
         duration_ms = plan.get("duration_ms", 1000)
@@ -40,7 +60,10 @@ def render_animation_from_plan(plan: dict, char_png: str, parts_dir: str|None = 
                     parts[name] = Image.open(p).convert("RGBA")
 
         # This helper puts everything together for each frame
+
         def compose_frame(offset:tuple=(0,0), scale:tuple=(1.0,1.0), head_img:Image.Image|None=None, extra_overlay:Image.Image|None=None) -> Image.Image:
+            """Build a single frame with optional transforms and overlays."""
+
             canvas = Image.new("RGBA", base.size, (255,255,255,0))
             # Resize the character for scaling
             sw = int(base.width * scale[0])

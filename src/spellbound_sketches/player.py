@@ -1,6 +1,5 @@
 
-# This file helps us show animated GIFs and lets the computer read text out loud!
-# It's a fun way to mix art and storytelling with code.
+"""Display animated GIFs and optionally speak accompanying text (TTS)."""
 
 import tkinter as tk  # tkinter helps us make simple windows and GUIs (Graphical User Interfaces)
 from PIL import Image, ImageTk, ImageSequence  # PIL lets us work with images and animations
@@ -9,8 +8,9 @@ import pyttsx3  # pyttsx3 is a library that makes the computer talk (Text-to-Spe
 import time
 
 
-# This function makes the computer say whatever text you give it.
 def playtts(text: str):
+    """Speak the given text using the system TTS engine."""
+
     if not text:
         return  # If there's nothing to say, just stop
     try:
@@ -20,11 +20,13 @@ def playtts(text: str):
     except Exception as e:
         print(f"Error with text-to-speech: {e}")
 
-
-# This function shows an animated GIF and (optionally) speaks some text at the same time!
-# gifpath: where your GIF file is saved
-# tts_text: what you want the computer to say (can be empty)
 def playgifwithtts(gif_path: str, tts_text: str = ""):
+    """Play an animated GIF and optionally speak text at the same time.
+
+    Args:
+        gif_path: Path to the GIF file.
+        tts_text: Optional text to speak via TTS while the GIF plays.
+    """
     try:
         # If there's text to say, start talking in the background
         # (so the window doesn't freeze while talking)
