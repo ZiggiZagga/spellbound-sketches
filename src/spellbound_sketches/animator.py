@@ -16,12 +16,12 @@ logger = logging.getLogger("spellbound_sketches.animator")
 
 def lerp(a: float, b: float, t: float) -> float:
     """Linearly interpolate between two values."""
-    # Why: simple building block for smooth motion; pairs with easing below.
+    # Why: simple building block for smooth motion; pairs with easing below
     return a + (b - a) * t
 
 def ease_out(t: float) -> float:
     """Ease-out function: start fast, end slow."""
-    # Why: feels more natural than linear; reduces “robotic” motion.
+    # Why: feels more natural than linear; reduces “robotic” motion
     return 1 - (1 - t) * (1 - t)
 
 def render_animation_from_plan(
@@ -69,7 +69,7 @@ def render_animation_from_plan(
         w, h = base.size
         frames = []
 
-        # Optional part overlays (e.g., head). Non-blocking if missing.
+        # Optional part overlays (e.g., head). Non-blocking if missing
         parts = {}
         if parts_dir and parts_dir.is_dir():
             for name in ("body", "head", "leftwing", "rightwing"):
