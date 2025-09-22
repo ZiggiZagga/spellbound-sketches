@@ -70,40 +70,54 @@ def cli_collect_onboarding() -> dict:
 def sketch() -> None:
     """Create an animation from a user supplied drawing."""
     logger.info("Sketchbook Animator — quick prototype")
-    img_path = input("Path to photo/scan of the drawing (png/jpg) [sample_data/sample_drawing.png]: ").strip()
+    print("\n--- Image Selection ---")
+    print("Tip: You can use your own drawing (PNG/JPG) or just press Enter to use the sample.")
+    img_path = input("Path to photo/scan of the drawing [sample_data/sample_drawing.png]: ").strip()
     if not img_path:
         img_path = "sample_data/sample_drawing.png"
     img_path = Path(img_path)
     onboarding = cli_collect_onboarding()
 
     logger.info("Preprocessing image (removing background)...")
+    print("\n[Info] Removing background from your image...")
     charpng = remove_background(img_path, out_path=Path("character.png"))
     if not charpng:
+        print("[Error] Failed to preprocess image. Please check the file path and format.")
         logger.error("Failed to preprocess image. Exiting.")
         return
 
     logger.info("Optional: export parts for better puppeting (head, body, leftwing, rightwing).")
+    print("[Info] Exporting character parts for animation...")
     parts_dir = Path("parts")
     parts = export_parts(charpng, parts_dir=parts_dir, auto=True)  # returns dict or None
     if parts is None:
+        print("[Warning] Could not export parts. Continuing with main image only.")
         logger.warning("Could not export parts. Continuing with main image only.")
 
     logger.info("Requesting animation plan from multimodal adapter...")
+    print("[Info] Requesting animation plan from the AI...")
     plan = multimodal_plan_for_animation(image_path=charpng, onboarding=onboarding)
+    print("[Info] Plan received:")
+    print(json.dumps(plan, indent=2))
     logger.info("Plan received:")
     logger.info(json.dumps(plan, indent=2))
 
     logger.info("Rendering animation frames...")
+    print("[Info] Rendering animation frames...")
     gifpath = render_animation_from_plan(plan, charpng, parts_dir=parts_dir)
     if not gifpath:
+        print("[Error] Failed to render animation. Please check your image and try again.")
         logger.error("Failed to render animation. Exiting.")
         return
+    print(f"[Success] Saved GIF to {gifpath}")
     logger.info(f"Saved GIF to {gifpath}")
 
     logger.info("Playing animation with short voice line...")
+    print("[Info] Playing animation with voice line...")
     try:
         playgifwithtts(gifpath, plan.get("sound_text", ""))
     except Exception as e:
+        print(f"[Error] Could not play animation or TTS: {e}")
         logger.error(f"Error playing animation or TTS: {e}")
 
 

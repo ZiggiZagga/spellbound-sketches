@@ -34,6 +34,9 @@ def playgifwithtts(gif_path: str, tts_text: Optional[str] = "") -> None:
     root.title("Sketchbook Friend")
     lbl = tk.Label(root)
     lbl.pack()
+    # Tooltip/help label
+    help_lbl = tk.Label(root, text="Tip: You can close this window at any time. If you see an error, check your image file.", fg="gray")
+    help_lbl.pack()
     # Show loading indicator
     lbl.config(text="Loading animation...", image="")
     root.update()
@@ -55,4 +58,5 @@ def playgifwithtts(gif_path: str, tts_text: Optional[str] = "") -> None:
     except Exception as e:
         logger.error(f"Error playing GIF or TTS: {e}")
         lbl.config(text=f"Error: Could not play animation.\n{e}", image="")
+        help_lbl.config(text="Help: Make sure your image is a valid GIF or PNG and try again.", fg="red")
     root.mainloop()
