@@ -111,8 +111,21 @@ def sketch() -> None:
         if choice in {"a", ""}:
             break
         elif choice == "e":
-            # Editing will be implemented in the next step
-            print("[Edit] Editing not yet implemented. Please choose another option.")
+            # Simple editing: duration, fps, sound_text
+            try:
+                new_duration = input(f"Enter animation duration in ms [{plan.get('duration_ms', 1200)}]: ").strip()
+                if new_duration:
+                    plan['duration_ms'] = int(new_duration)
+                new_fps = input(f"Enter frames per second [{plan.get('fps', 12)}]: ").strip()
+                if new_fps:
+                    plan['fps'] = int(new_fps)
+                new_sound = input(f"Enter voice line (sound_text) [{plan.get('sound_text', '')}]: ").strip()
+                if new_sound:
+                    plan['sound_text'] = new_sound
+                print("[Edit] Updated plan:")
+                print(json.dumps(plan, indent=2))
+            except Exception as e:
+                print(f"[Error] Invalid input: {e}")
         elif choice == "r":
             print("[Info] Regenerating animation plan...")
             plan = multimodal_plan_for_animation(image_path=charpng, onboarding=onboarding)
