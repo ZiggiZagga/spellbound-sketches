@@ -2,9 +2,13 @@
 
 from PIL import Image, ImageOps
 import numpy as np
-import os
+from pathlib import Path
+import logging
+from typing import Optional, Dict
 
-def remove_background(input_path: str, out_path: str = "character.png"):
+logger = logging.getLogger("spellbound_sketches.preprocess")
+
+def remove_background(input_path: str | Path, out_path: str | Path = "character.png") -> Optional[str]:
     """Remove (near-)white background and save a transparent PNG.
 
     Args:
@@ -15,6 +19,8 @@ def remove_background(input_path: str, out_path: str = "character.png"):
         The output path on success, or None on failure.
     """
     try:
+        input_path = Path(input_path)
+        out_path = Path(out_path)
         img = Image.open(input_path).convert("RGBA")
         arr = np.array(img)
         # This line finds all the pixels that are NOT white (so we keep the character)
@@ -23,12 +29,16 @@ def remove_background(input_path: str, out_path: str = "character.png"):
         arr[:,:,3] = mask.astype(np.uint8)*255  # Make background transparent
         res = Image.fromarray(arr)
         res.save(out_path)
-        return out_path
+        return str(out_path)
     except Exception as e:
-        print(f"Error removing background: {e}")
+        logger.error(f"Error removing background: {e}")
         return None
 
-def export_parts(charpng_path: str, parts_dir="parts", auto=True):
+def export_parts(
+    charpng_path: str | Path,
+    parts_dir: str | Path = "parts",
+    auto: bool = True
+) -> Optional[Dict[str, str]]:
     """Naively crop an image into head/body/left_wing/right_wing parts.
 
     Args:
@@ -40,7 +50,9 @@ def export_parts(charpng_path: str, parts_dir="parts", auto=True):
         Dict of part names to file paths, or None on failure.
     """
     try:
-        os.makedirs(parts_dir, exist_ok=True)
+        charpng_path = Path(charpng_path)
+        parts_dir = Path(parts_dir)
+        parts_dir.mkdir(parents=True, exist_ok=True)
         img = Image.open(charpng_path).convert("RGBA")
         w, h = img.size
         # Split the image into parts using simple math (thirds of the image)
@@ -49,17 +61,22 @@ def export_parts(charpng_path: str, parts_dir="parts", auto=True):
         left_wing = img.crop((0, int(h*0.25), int(w*0.35), int(h*0.6)))
         right_wing = img.crop((int(w*0.65), int(h*0.25), w, int(h*0.6)))
 
-        head.save(os.path.join(parts_dir, "head.png"))
-        body.save(os.path.join(parts_dir, "body.png"))
-        left_wing.save(os.path.join(parts_dir, "left_wing.png"))
-        right_wing.save(os.path.join(parts_dir, "right_wing.png"))
+        head_path = parts_dir / "head.png"
+        body_path = parts_dir / "body.png"
+        left_wing_path = parts_dir / "left_wing.png"
+        right_wing_path = parts_dir / "right_wing.png"
+
+        head.save(head_path)
+        body.save(body_path)
+        left_wing.save(left_wing_path)
+        right_wing.save(right_wing_path)
 
         return {
-            "head": os.path.join(parts_dir, "head.png"),
-            "body": os.path.join(parts_dir, "body.png"),
-            "left_wing": os.path.join(parts_dir, "left_wing.png"),
-            "right_wing": os.path.join(parts_dir, "right_wing.png"),
+            "head": str(head_path),
+            "body": str(body_path),
+            "left_wing": str(left_wing_path),
+            "right_wing": str(right_wing_path),
         }
     except Exception as e:
-        print(f"Error exporting parts: {e}")
+        logger.error(f"Error exporting parts: {e}")
         return None

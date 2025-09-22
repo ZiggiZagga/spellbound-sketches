@@ -8,8 +8,9 @@ plan for testing purposes.
 
 import json
 import base64
+from typing import Dict, Any
 
-def call_multimodal_api(image_path: str, prompt: str) -> dict:
+def call_multimodal_api(image_path: str, prompt: str) -> Dict[str, Any]:
     """Placeholder for a real multimodal API call.
 
     Args:
@@ -24,7 +25,7 @@ def call_multimodal_api(image_path: str, prompt: str) -> dict:
     """
     raise RuntimeError("TODO: No real multimodal API configured. Use fallback or implement API call here.")
 
-def canned_plan_for_animation():
+def canned_plan_for_animation() -> Dict[str, Any]:
     """Return a fake animation plan for testing."""
 
     return {
@@ -65,7 +66,7 @@ def canned_plan_for_animation():
         }
     }
 
-def multimodal_plan_for_animation(image_path: str, onboarding: dict) -> dict:
+def multimodal_plan_for_animation(image_path: str, onboarding: Dict[str, Any]) -> Dict[str, Any]:
     """Get an animation plan using a multimodal AI or fallback.
 
     Attempts to call the real multimodal API with the given drawing
