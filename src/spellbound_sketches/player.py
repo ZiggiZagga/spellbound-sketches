@@ -34,25 +34,62 @@ def playgifwithtts(gif_path: str, tts_text: Optional[str] = "") -> None:
     root.title("Sketchbook Friend")
     lbl = tk.Label(root)
     lbl.pack()
+    # Tooltip/help label
+    help_lbl = tk.Label(root, text="Tip: You can close this window at any time. Drag and drop a new GIF/PNG to reload.", fg="gray")
+    help_lbl.pack()
     # Show loading indicator
     lbl.config(text="Loading animation...", image="")
     root.update()
+
+    def load_and_play_image(path):
+        try:
+            # If there's text to say, start talking in the background
+            if tts_text:
+                threading.Thread(target=playtts, args=(tts_text,), daemon=True).start()
+
+            im = Image.open(path)
+            frames = [ImageTk.PhotoImage(frame.convert("RGBA"), master=root) for frame in ImageSequence.Iterator(im)]
+            durations = im.info.get("duration", 100)
+
+            def animate(i=0):
+                lbl.config(image=frames[i], text="")
+                root.after(durations, lambda: animate((i+1) % len(frames)))
+
+            animate(0)
+            help_lbl.config(text="Tip: Drag and drop a new GIF/PNG to reload.", fg="gray")
+        except Exception as e:
+            logger.error(f"Error playing GIF or TTS: {e}")
+            lbl.config(text=f"Error: Could not play animation.\n{e}", image="")
+            help_lbl.config(text="Help: Make sure your image is a valid GIF or PNG and try again.", fg="red")
+
+    # Drag-and-drop support (Windows, Linux, macOS)
+    def on_drop(event):
+        # event.data may contain file path(s)
+        path = event.data if hasattr(event, 'data') else event.widget.tk.splitlist(event.data)[0]
+        if path and (path.endswith('.gif') or path.endswith('.png')):
+            lbl.config(text="Loading animation...", image="")
+            root.update()
+            load_and_play_image(path)
     try:
-        # If there's text to say, start talking in the background
-        if tts_text:
-            threading.Thread(target=playtts, args=(tts_text,), daemon=True).start()
-
-        # Open the GIF file
-        im = Image.open(gif_path)
-        frames = [ImageTk.PhotoImage(frame.convert("RGBA"), master=root) for frame in ImageSequence.Iterator(im)]
-        durations = im.info.get("duration", 100)
-
-        def animate(i=0):
-            lbl.config(image=frames[i], text="")
-            root.after(durations, lambda: animate((i+1) % len(frames)))
-
-        animate(0)
+        # TkinterDnD2 is a common cross-platform drag-and-drop extension
+        try:
+            from tkinterdnd2 import DND_FILES, TkinterDnD
+            root.destroy()
+            root = TkinterDnD.Tk()
+            root.title("Sketchbook Friend")
+            lbl = tk.Label(root)
+            lbl.pack()
+            help_lbl = tk.Label(root, text="Tip: You can close this window at any time. Drag and drop a new GIF/PNG to reload.", fg="gray")
+            help_lbl.pack()
+            lbl.drop_target_register(DND_FILES)
+            lbl.dnd_bind('<<Drop>>', on_drop)
+        except ImportError:
+            # Fallback: try to use native Tkinter drag-and-drop (limited)
+            lbl.bind('<Drag>', lambda e: None)
+            lbl.bind('<Drop>', on_drop)
+        load_and_play_image(gif_path)
     except Exception as e:
-        logger.error(f"Error playing GIF or TTS: {e}")
-        lbl.config(text=f"Error: Could not play animation.\n{e}", image="")
+        logger.error(f"Error initializing drag-and-drop: {e}")
+        lbl.config(text=f"Error: Could not initialize drag-and-drop.\n{e}", image="")
+        help_lbl.config(text="Help: Try installing tkinterdnd2 for drag-and-drop support.", fg="red")
     root.mainloop()
