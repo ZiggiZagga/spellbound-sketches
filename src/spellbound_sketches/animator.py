@@ -79,7 +79,7 @@ def render_animation_from_plan(
             # Resize the character for scaling
             sw = int(base.width * scale[0])
             sh = int(base.height * scale[1])
-            base_resized = base.resize((sw, sh), resample=Image.BICUBIC)
+            base_resized = base.resize((sw, sh), resample=Image.Resampling.BICUBIC)
             x = (w - sw)//2 + offset[0]
             y = (h - sh)//2 + offset[1]
             canvas.paste(base_resized, (int(x), int(y)), base_resized)
